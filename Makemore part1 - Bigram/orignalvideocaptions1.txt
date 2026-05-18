@@ -1,0 +1,2160 @@
+hi everyone hope you're well
+
+and next up what i'd like to do is i'd
+
+like to build out make more
+
+like micrograd before it make more is a
+
+repository that i have on my github
+
+webpage
+
+you can look at it
+
+but just like with micrograd i'm going
+
+to build it out step by step and i'm
+
+going to spell everything out so we're
+
+going to build it out slowly and
+
+together
+
+now what is make more
+
+make more as the name suggests
+
+makes more of things that you give it
+
+so here's an example
+
+names.txt is an example dataset to make
+
+more
+
+and when you look at names.txt you'll
+
+find that it's a very large data set of
+
+names
+
+so
+
+here's lots of different types of names
+
+in fact i believe there are 32 000 names
+
+that i've sort of found randomly on the
+
+government website
+
+and if you train make more on this data
+
+set it will learn to make more of things
+
+like this
+
+and in particular in this case that will
+
+mean more things that sound name-like
+
+but are actually unique names
+
+and maybe if you have a baby and you're
+
+trying to assign name maybe you're
+
+looking for a cool new sounding unique
+
+name make more might help you
+
+so here are some example generations
+
+from the neural network
+
+once we train it on our data set
+
+so here's some example
+
+unique names that it will generate
+
+dontel
+
+irot
+
+zhendi
+
+and so on and so all these are sound
+
+name like but they're not of course
+
+names
+
+so under the hood make more is a
+
+character level language model so what
+
+that means is that it is treating every
+
+single line here as an example and
+
+within each example it's treating them
+
+all as sequences of individual
+
+characters so r e e s e is this example
+
+and that's the sequence of characters
+
+and that's the level on which we are
+
+building out make more and what it means
+
+to be a character level language model
+
+then is that it's just uh sort of
+
+modeling those sequences of characters
+
+and it knows how to predict the next
+
+character in the sequence
+
+now we're actually going to implement a
+
+large number of character level language
+
+models in terms of the neural networks
+
+that are involved in predicting the next
+
+character in a sequence so very simple
+
+bi-gram and back of work models
+
+multilingual perceptrons recurrent
+
+neural networks all the way to modern
+
+transformers in fact the transformer
+
+that we will build will be basically the
+
+equivalent transformer to gpt2 if you
+
+have heard of gpt uh so that's kind of a
+
+big deal it's a modern network and by
+
+the end of the series you will actually
+
+understand how that works um on the
+
+level of characters now to give you a
+
+sense of the extensions here uh after
+
+characters we will probably spend some
+
+time on the word level so that we can
+
+generate documents of words not just
+
+little you know segments of characters
+
+but we can generate entire large much
+
+larger documents
+
+and then we're probably going to go into
+
+images and image text
+
+networks such as dolly stable diffusion
+
+and so on but for now we have to start
+
+here character level language modeling
+
+let's go
+
+so like before we are starting with a
+
+completely blank jupiter notebook page
+
+the first thing is i would like to
+
+basically load up the dataset names.txt
+
+so we're going to open up names.txt for
+
+reading
+
+and we're going to read in everything
+
+into a massive string
+
+and then because it's a massive string
+
+we'd only like the individual words and
+
+put them in the list
+
+so let's call split lines
+
+on that string
+
+to get all of our words as a python list
+
+of strings
+
+so basically we can look at for example
+
+the first 10 words
+
+and we have that it's a list of emma
+
+olivia eva and so on
+
+and if we look at
+
+the top of the page here that is indeed
+
+what we see
+
+um
+
+so that's good
+
+this list actually makes me feel that
+
+this is probably sorted by frequency
+
+but okay so
+
+these are the words now we'd like to
+
+actually like learn a little bit more
+
+about this data set let's look at the
+
+total number of words we expect this to
+
+be roughly 32 000
+
+and then what is the for example
+
+shortest word
+
+so min of
+
+length of each word for w inwards
+
+so the shortest word will be length
+
+two
+
+and max of one w for w in words so the
+
+longest word will be
+
+15 characters
+
+so let's now think through our very
+
+first language model
+
+as i mentioned a character level
+
+language model is predicting the next
+
+character in a sequence given already
+
+some concrete sequence of characters
+
+before it
+
+now we have to realize here is that
+
+every single word here like isabella is
+
+actually quite a few examples packed in
+
+to that single word
+
+because what is an existence of a word
+
+like isabella in the data set telling us
+
+really it's saying that
+
+the character i is a very likely
+
+character to come first in the sequence
+
+of a name
+
+the character s is likely to come
+
+after i
+
+the character a is likely to come after
+
+is
+
+the character b is very likely to come
+
+after isa and so on all the way to a
+
+following isabel
+
+and then there's one more example
+
+actually packed in here
+
+and that is that
+
+after there's isabella
+
+the word is very likely to end
+
+so that's one more sort of explicit
+
+piece of information that we have here
+
+that we have to be careful with
+
+and so there's a lot backed into a
+
+single individual word in terms of the
+
+statistical structure of what's likely
+
+to follow in these character sequences
+
+and then of course we don't have just an
+
+individual word we actually have 32 000
+
+of these and so there's a lot of
+
+structure here to model
+
+now in the beginning what i'd like to
+
+start with is i'd like to start with
+
+building a bi-gram language model
+
+now in the bigram language model we're
+
+always working with just
+
+two characters at a time
+
+so we're only looking at one character
+
+that we are given and we're trying to
+
+predict the next character in the
+
+sequence
+
+so um what characters are likely to
+
+follow are what characters are likely to
+
+follow a and so on and we're just
+
+modeling that kind of a little local
+
+structure
+
+and we're forgetting the fact that we
+
+may have a lot more information we're
+
+always just looking at the previous
+
+character to predict the next one so
+
+it's a very simple and weak language
+
+model but i think it's a great place to
+
+start
+
+so now let's begin by looking at these
+
+bi-grams in our data set and what they
+
+look like and these bi-grams again are
+
+just two characters in a row
+
+so for w in words
+
+each w here is an individual word a
+
+string
+
+we want to iterate uh for
+
+we're going to iterate this word
+
+with consecutive characters so two
+
+characters at a time sliding it through
+
+the word now a interesting nice way cute
+
+way to do this in python by the way is
+
+doing something like this for character
+
+one character two in zip off
+
+w and w at one
+
+one column
+
+print
+
+character one character two
+
+and let's not do all the words let's
+
+just do the first three words and i'm
+
+going to show you in a second how this
+
+works
+
+but for now basically as an example
+
+let's just do the very first word alone
+
+emma
+
+you see how we have a emma and this will
+
+just print e m m m a
+
+and the reason this works is because w
+
+is the string emma w at one column is
+
+the string mma
+
+and zip
+
+takes two iterators and it pairs them up
+
+and then creates an iterator over the
+
+tuples of their consecutive entries
+
+and if any one of these lists is shorter
+
+than the other then it will just
+
+halt and return
+
+so basically that's why we return em mmm
+
+ma
+
+but then because this iterator second
+
+one here runs out of elements zip just
+
+ends and that's why we only get these
+
+tuples so pretty cute
+
+so these are the consecutive elements in
+
+the first word now we have to be careful
+
+because we actually have more
+
+information here than just these three
+
+examples as i mentioned we know that e
+
+is the is very likely to come first and
+
+we know that a in this case is coming
+
+last
+
+so one way to do this is basically we're
+
+going to create
+
+a special array here all
+
+characters
+
+and um we're going to hallucinate a
+
+special start token here
+
+i'm going to
+
+call it like special start
+
+so this is a list of one element
+
+plus
+
+w
+
+and then plus a special end character
+
+and the reason i'm wrapping the list of
+
+w here is because w is a string emma
+
+list of w will just have the individual
+
+characters in the list
+
+and then
+
+doing this again now but not iterating
+
+over w's but over the characters
+
+will give us something like this
+
+so e is likely so this is a bigram of
+
+the start character and e and this is a
+
+bigram of the
+
+a and the special end character
+
+and now we can look at for example what
+
+this looks like for
+
+olivia or eva
+
+and indeed we can actually
+
+potentially do this for the entire data
+
+set but we won't print that that's going
+
+to be too much
+
+but these are the individual character
+
+diagrams and we can print them
+
+now in order to learn the statistics
+
+about which characters are likely to
+
+follow other characters the simplest way
+
+in the bigram language models is to
+
+simply do it by counting
+
+so we're basically just going to count
+
+how often any one of these combinations
+
+occurs in the training set
+
+in these words
+
+so we're going to need some kind of a
+
+dictionary that's going to maintain some
+
+counts for every one of these diagrams
+
+so let's use a dictionary b
+
+and this will map these bi-grams so
+
+bi-gram is a tuple of character one
+
+character two
+
+and then b at bi-gram
+
+will be b dot get of bi-gram
+
+which is basically the same as b at
+
+bigram
+
+but in the case that bigram is not in
+
+the dictionary b we would like to by
+
+default return to zero
+
+plus one
+
+so this will basically add up all the
+
+bigrams and count how often they occur
+
+let's get rid of printing
+
+or rather
+
+let's keep the printing and let's just
+
+inspect what b is in this case
+
+and we see that many bi-grams occur just
+
+a single time this one allegedly
+
+occurred three times
+
+so a was an ending character three times
+
+and that's true for all of these words
+
+all of emma olivia and eva and with a
+
+so that's why this occurred three times
+
+now let's do it for all the words
+
+oops i should not have printed
+
+i'm going to erase that
+
+let's kill this
+
+let's just run
+
+and now b will have the statistics of
+
+the entire data set
+
+so these are the counts across all the
+
+words of the individual pie grams
+
+and we could for example look at some of
+
+the most common ones and least common
+
+ones
+
+this kind of grows in python but the way
+
+to do this the simplest way i like is we
+
+just use b dot items
+
+b dot items returns
+
+the tuples of
+
+key value in this case the keys are
+
+the character diagrams and the values
+
+are the counts
+
+and so then what we want to do is we
+
+want to do
+
+sorted of this
+
+but by default sort is on the first
+
+on the first item of a tuple but we want
+
+to sort by the values which are the
+
+second element of a tuple that is the
+
+key value
+
+so we want to use the key
+
+equals lambda
+
+that takes the key value
+
+and returns
+
+the key value at the one not at zero but
+
+at one which is the count so we want to
+
+sort by the count
+
+of these elements
+
+and actually we wanted to go backwards
+
+so here we have is
+
+the bi-gram q and r occurs only a single
+
+time
+
+dz occurred only a single time
+
+and when we sort this the other way
+
+around
+
+we're going to see the most likely
+
+bigrams so we see that n was
+
+very often an ending character
+
+many many times and apparently n almost
+
+always follows an a
+
+and that's a very likely combination as
+
+well
+
+so
+
+this is kind of the individual counts
+
+that we achieve over the entire data set
+
+now it's actually going to be
+
+significantly more convenient for us to
+
+keep this information in a
+
+two-dimensional array instead of a
+
+python dictionary
+
+so
+
+we're going to store this information
+
+in a 2d array
+
+and
+
+the rows are going to be the first
+
+character of the bigram and the columns
+
+are going to be the second character and
+
+each entry in this two-dimensional array
+
+will tell us how often that first
+
+character files the second character in
+
+the data set
+
+so in particular the array
+
+representation that we're going to use
+
+or the library is that of pytorch
+
+and pytorch is a deep
+
+learning neural network framework but
+
+part of it is also this torch.tensor
+
+which allows us to create
+
+multi-dimensional arrays and manipulate
+
+them very efficiently
+
+so
+
+let's import pytorch which you can do by
+
+import torch
+
+and then we can create
+
+arrays
+
+so let's create a array of zeros
+
+and we give it a
+
+size of this array let's create a three
+
+by five array as an example
+
+and
+
+this is a three by five array of zeros
+
+and by default you'll notice a.d type
+
+which is short for data type is float32
+
+so these are single precision floating
+
+point numbers
+
+because we are going to represent counts
+
+let's actually use d type as torch dot
+
+and 32
+
+so these are
+
+32-bit integers
+
+so now you see that we have integer data
+
+inside this tensor
+
+now tensors allow us to really
+
+manipulate all the individual entries
+
+and do it very efficiently
+
+so for example if we want to change this
+
+bit
+
+we have to index into the tensor and in
+
+particular here this is the first row
+
+and the
+
+because it's zero indexed so this is row
+
+index one and column index zero one two
+
+three
+
+so a at one comma three we can set that
+
+to one
+
+and then a we'll have a 1 over there
+
+we can of course also do things like
+
+this so now a will be 2 over there
+
+or 3.
+
+and also we can for example say a 0 0 is
+
+5
+
+and then a will have a 5 over here
+
+so that's how we can index into the
+
+arrays now of course the array that we
+
+are interested in is much much bigger so
+
+for our purposes we have 26 letters of
+
+the alphabet
+
+and then we have two special characters
+
+s and e
+
+so uh we want 26 plus 2 or 28 by 28
+
+array
+
+and let's call it the capital n because
+
+it's going to represent sort of the
+
+counts
+
+let me erase this stuff
+
+so that's the array that starts at zeros
+
+28 by 28
+
+and now let's copy paste this
+
+here
+
+but instead of having a dictionary b
+
+which we're going to erase we now have
+
+an n
+
+now the problem here is that we have
+
+these characters which are strings but
+
+we have to now
+
+um basically index into a
+
+um array and we have to index using
+
+integers so we need some kind of a
+
+lookup table from characters to integers
+
+so let's construct such a character
+
+array
+
+and the way we're going to do this is
+
+we're going to take all the words which
+
+is a list of strings
+
+we're going to concatenate all of it
+
+into a massive string so this is just
+
+simply the entire data set as a single
+
+string
+
+we're going to pass this to the set
+
+constructor which takes this massive
+
+string
+
+and throws out duplicates because sets
+
+do not allow duplicates
+
+so set of this will just be the set of
+
+all the lowercase characters
+
+and there should be a total of 26 of
+
+them
+
+and now we actually don't want a set we
+
+want a list
+
+but we don't want a list sorted in some
+
+weird arbitrary way we want it to be
+
+sorted
+
+from a to z
+
+so sorted list
+
+so those are our characters
+
+now what we want is this lookup table as
+
+i mentioned so let's create a special
+
+s2i i will call it
+
+um s is string or character and this
+
+will be an s2i mapping
+
+for
+
+is in enumerate of these characters
+
+so enumerate basically gives us this
+
+iterator over the integer index and the
+
+actual element of the list and then we
+
+are mapping the character to the integer
+
+so s2i
+
+is a mapping from a to 0 b to 1 etc all
+
+the way from z to 25
+
+and that's going to be useful here but
+
+we actually also have to specifically
+
+set that s will be 26
+
+and s to i at e will be 27 right because
+
+z was 25.
+
+so those are the lookups and now we can
+
+come here and we can map
+
+both character 1 and character 2 to
+
+their integers
+
+so this will be s2i at character 1
+
+and ix2 will be s2i of character 2.
+
+and now we should be able to
+
+do this line but using our array so n at
+
+x1 ix2 this is the two-dimensional array
+
+indexing i've shown you before
+
+and honestly just plus equals one
+
+because everything starts at
+
+zero
+
+so this should
+
+work
+
+and give us a large 28 by 28 array
+
+of all these counts so
+
+if we print n
+
+this is the array but of course it looks
+
+ugly so let's erase this ugly mess and
+
+let's try to visualize it a bit more
+
+nicer
+
+so for that we're going to use a library
+
+called matplotlib
+
+so matplotlib allows us to create
+
+figures so we can do things like plt
+
+item show of the counter array
+
+so this is the 28x28 array
+
+and this is structure but even this i
+
+would say is still pretty ugly
+
+so we're going to try to create a much
+
+nicer visualization of it and i wrote a
+
+bunch of code for that
+
+the first thing we're going to need is
+
+we're going to need to invert
+
+this array here this dictionary so s2i
+
+is mapping from s to i
+
+and in i2s we're going to reverse this
+
+dictionary so iterator of all the items
+
+and just reverse that array
+
+so i2s
+
+maps inversely from 0 to a 1 to b etc
+
+so we'll need that
+
+and then here's the code that i came up
+
+with to try to make this a little bit
+
+nicer
+
+we create a figure
+
+we plot
+
+n
+
+and then we do and then we visualize a
+
+bunch of things later let me just run it
+
+so you get a sense of what this is
+
+okay
+
+so you see here that we have
+
+the array spaced out
+
+and every one of these is basically like
+
+b follows g zero times
+
+b follows h 41 times
+
+um so a follows j 175 times
+
+and so what you can see that i'm doing
+
+here is first i show that entire array
+
+and then i iterate over all the
+
+individual little cells here
+
+and i create a character string here
+
+which is the inverse mapping i2s of the
+
+integer i and the integer j so those are
+
+the bi-grams in a character
+
+representation
+
+and then i plot just the diagram text
+
+and then i plot the number of times that
+
+this bigram occurs
+
+now the reason that there's a dot item
+
+here is because when you index into
+
+these arrays these are torch tensors
+
+you see that we still get a tensor back
+
+so the type of this thing you'd think it
+
+would be just an integer 149 but it's
+
+actually a torch.tensor
+
+and so
+
+if you do dot item then it will pop out
+
+that in individual integer
+
+so it will just be 149.
+
+so that's what's happening there and
+
+these are just some options to make it
+
+look nice
+
+so what is the structure of this array
+
+we have all these counts and we see that
+
+some of them occur often and some of
+
+them do not occur often
+
+now if you scrutinize this carefully you
+
+will notice that we're not actually
+
+being very clever
+
+that's because when you come over here
+
+you'll notice that for example we have
+
+an entire row of completely zeros and
+
+that's because the end character
+
+is never possibly going to be the first
+
+character of a bi-gram because we're
+
+always placing these end tokens all at
+
+the end of the diagram
+
+similarly we have entire columns zeros
+
+here because the s
+
+character will never possibly be the
+
+second element of a bigram because we
+
+always start with s and we end with e
+
+and we only have the words in between
+
+so we have an entire column of zeros an
+
+entire row of zeros and in this little
+
+two by two matrix here as well the only
+
+one that can possibly happen is if s
+
+directly follows e
+
+that can be non-zero if we have a word
+
+that has no letters so in that case
+
+there's no letters in the word it's an
+
+empty word and we just have s follows e
+
+but the other ones are just not possible
+
+and so we're basically wasting space and
+
+not only that but the s and the e are
+
+getting very crowded here
+
+i was using these brackets because
+
+there's convention and natural language
+
+processing to use these kinds of
+
+brackets to denote special tokens
+
+but we're going to use something else
+
+so let's fix all this and make it
+
+prettier
+
+we're not actually going to have two
+
+special tokens we're only going to have
+
+one special token
+
+so
+
+we're going to have n by n
+
+array of 27 by 27 instead
+
+instead of having two
+
+we will just have one and i will call it
+
+a dot
+
+okay
+
+let me swing this over here
+
+now one more thing that i would like to
+
+do is i would actually like to make this
+
+special character half position zero
+
+and i would like to offset all the other
+
+letters off i find that a little bit
+
+more
+
+pleasing
+
+so
+
+we need a plus one here so that the
+
+first character which is a will start at
+
+one
+
+so s2i
+
+will now be a starts at one and dot is 0
+
+and
+
+i2s of course we're not changing this
+
+because i2s just creates a reverse
+
+mapping and this will work fine so 1 is
+
+a 2 is b
+
+0 is dot
+
+so we've reversed that here
+
+we have
+
+a dot and a dot
+
+this should work fine
+
+make sure i start at zeros
+
+count
+
+and then here we don't go up to 28 we go
+
+up to 27
+
+and this should just work
+
+okay
+
+so we see that dot never happened it's
+
+at zero because we don't have empty
+
+words
+
+then this row here now is just uh very
+
+simply the um
+
+counts for all the first letters so
+
+uh j starts a word h starts a word i
+
+starts a word etc and then these are all
+
+the ending
+
+characters
+
+and in between we have the structure of
+
+what characters follow each other
+
+so this is the counts array of our
+
+entire
+
+data set so this array actually has all
+
+the information necessary for us to
+
+actually sample from this bigram
+
+uh character level language model
+
+and um roughly speaking what we're going
+
+to do is we're just going to start
+
+following these probabilities and these
+
+counts and we're going to start sampling
+
+from the from the model
+
+so in the beginning of course
+
+we start with the dot the start token
+
+dot
+
+so to sample the first character of a
+
+name we're looking at this row here
+
+so we see that we have the counts and
+
+those concepts terminally are telling us
+
+how often any one of these characters is
+
+to start a word
+
+so if we take this n
+
+and we grab the first row
+
+we can do that by using just indexing as
+
+zero
+
+and then using this notation column for
+
+the rest of that row
+
+so n zero colon
+
+is indexing into the zeroth
+
+row and then it's grabbing all the
+
+columns
+
+and so this will give us a
+
+one-dimensional array
+
+of the first row so zero four four ten
+
+you know zero four four ten one three oh
+
+six one five four two etc it's just the
+
+first row the shape of this
+
+is 27 it's just the row of 27
+
+and the other way that you can do this
+
+also is you just you don't need to
+
+actually give this
+
+you just grab the zeroth row like this
+
+this is equivalent
+
+now these are the counts
+
+and now what we'd like to do is we'd
+
+like to basically um sample from this
+
+since these are the raw counts we
+
+actually have to convert this to
+
+probabilities
+
+so we create a probability vector
+
+so we'll take n of zero
+
+and we'll actually convert this to float
+
+first
+
+okay so these integers are converted to
+
+float
+
+floating point numbers and the reason
+
+we're creating floats is because we're
+
+about to normalize these counts
+
+so to create a probability distribution
+
+here we want to divide
+
+we basically want to do p p p divide p
+
+that sum
+
+and now we get a vector of smaller
+
+numbers and these are now probabilities
+
+so of course because we divided by the
+
+sum the sum of p now is 1.
+
+so this is a nice proper probability
+
+distribution it sums to 1 and this is
+
+giving us the probability for any single
+
+character to be the first
+
+character of a word
+
+so now we can try to sample from this
+
+distribution to sample from these
+
+distributions we're going to use
+
+storch.multinomial which i've pulled up
+
+here
+
+so torch.multinomial returns uh
+
+samples from the multinomial probability
+
+distribution which is a complicated way
+
+of saying you give me probabilities and
+
+i will give you integers which are
+
+sampled
+
+according to the property distribution
+
+so this is the signature of the method
+
+and to make everything deterministic
+
+we're going to use a generator object in
+
+pytorch
+
+so this makes everything deterministic
+
+so when you run this on your computer
+
+you're going to the exact get the exact
+
+same results that i'm getting here on my
+
+computer
+
+so let me show you how this works
+
+here's the deterministic way of creating
+
+a torch generator object
+
+seeding it with some number that we can
+
+agree on
+
+so that seeds a generator gets gives us
+
+an object g
+
+and then we can pass that g
+
+to a function
+
+that creates um
+
+here random numbers twerk.rand creates
+
+random numbers three of them
+
+and it's using this generator object to
+
+as a source of randomness
+
+so
+
+without normalizing it
+
+i can just print
+
+this is sort of like numbers between 0
+
+and 1 that are random according to this
+
+thing and whenever i run it again
+
+i'm always going to get the same result
+
+because i keep using the same generator
+
+object which i'm seeing here
+
+and then if i divide
+
+to normalize i'm going to get a nice
+
+probability distribution of just three
+
+elements
+
+and then we can use torsion multinomial
+
+to draw samples from it so this is what
+
+that looks like
+
+tertiary multinomial we'll take the
+
+torch tensor
+
+of probability distributions
+
+then we can ask for a number of samples
+
+let's say 20.
+
+replacement equals true means that when
+
+we draw an element
+
+we will uh we can draw it and then we
+
+can put it back into the list of
+
+eligible indices to draw again
+
+and we have to specify replacement as
+
+true because by default uh for some
+
+reason it's false
+
+and i think
+
+you know it's just something to be
+
+careful with
+
+and the generator is passed in here so
+
+we're going to always get deterministic
+
+results the same results so if i run
+
+these two
+
+we're going to get a bunch of samples
+
+from this distribution
+
+now you'll notice here that the
+
+probability for the
+
+first element in this tensor is 60
+
+so in these 20 samples we'd expect 60 of
+
+them to be zero
+
+we'd expect thirty percent of them to be
+
+one
+
+and because the the element index two
+
+has only ten percent probability very
+
+few of these samples should be two and
+
+indeed we only have a small number of
+
+twos
+
+and we can sample as many as we'd like
+
+and the more we sample the more
+
+these numbers should um roughly have the
+
+distribution here
+
+so we should have lots of zeros
+
+half as many um
+
+ones and we should have um three times
+
+as few
+
+oh sorry s few ones and three times as
+
+few uh
+
+twos
+
+so you see that we have very few twos we
+
+have some ones and most of them are zero
+
+so that's what torsion multinomial is
+
+doing
+
+for us here
+
+we are interested in this row we've
+
+created this
+
+p here
+
+and now we can sample from it
+
+so if we use the same
+
+seed
+
+and then we sample from this
+
+distribution let's just get one sample
+
+then we see that the sample is say 13.
+
+so this will be the index
+
+and let's you see how it's a tensor that
+
+wraps 13 we again have to use that item
+
+to pop out that integer
+
+and now index would be just the number
+
+13.
+
+and of course the um we can do
+
+we can map the i2s of ix to figure out
+
+exactly which character
+
+we're sampling here we're sampling m
+
+so we're saying that the first character
+
+is
+
+in our generation
+
+and just looking at the road here
+
+m was drawn and you we can see that m
+
+actually starts a large number of words
+
+uh m
+
+started 2 500 words out of 32 000 words
+
+so almost
+
+a bit less than 10 percent of the words
+
+start with them so this was actually a
+
+fairly likely character to draw
+
+um
+
+so that would be the first character of
+
+our work and now we can continue to
+
+sample more characters because now we
+
+know that m started
+
+m is already sampled
+
+so now to draw the next character we
+
+will come back here and we will look for
+
+the row
+
+that starts with m
+
+so you see m
+
+and we have a row here
+
+so we see that m dot is
+
+516 m a is this many and b is this many
+
+etc so these are the counts for the next
+
+row and that's the next character that
+
+we are going to now generate
+
+so i think we are ready to actually just
+
+write out the loop because i think
+
+you're starting to get a sense of how
+
+this is going to go
+
+the um
+
+we always begin at
+
+index 0 because that's the start token
+
+and then while true
+
+we're going to grab the row
+
+corresponding to index
+
+that we're currently on so that's p
+
+so that's n array at ix
+
+converted to float is rp
+
+then we normalize
+
+this p to sum to one
+
+i accidentally ran the infinite loop we
+
+normalize p to something one
+
+then we need this generator object
+
+now we're going to initialize up here
+
+and we're going to draw a single sample
+
+from this distribution
+
+and then this is going to tell us what
+
+index is going to be next
+
+if the index sampled is
+
+0
+
+then that's now the end token
+
+so we will break
+
+otherwise we are going to print
+
+s2i of ix
+
+i2s
+
+and uh that's pretty much it we're just
+
+uh this should work okay more
+
+so that's that's the name that we've
+
+sampled we started with m the next step
+
+was o then r and then dot
+
+and this dot we it here as well
+
+so
+
+let's now do this a few times
+
+so let's actually create an
+
+out list here
+
+and instead of printing we're going to
+
+append
+
+so out that append this character
+
+and then here let's just print it at the
+
+end so let's just join up all the outs
+
+and we're just going to print more okay
+
+now we're always getting the same result
+
+because of the generator
+
+so if we want to do this a few times we
+
+can go for i in range
+
+10 we can sample 10 names
+
+and we can just do that 10 times
+
+and these are the names that we're
+
+getting out
+
+let's do 20.
+
+i'll be honest with you this doesn't
+
+look right
+
+so i started a few minutes to convince
+
+myself that it actually is right
+
+the reason these samples are so terrible
+
+is that bigram language model
+
+is actually look just like really
+
+terrible
+
+we can generate a few more here
+
+and you can see that they're kind of
+
+like their name like a little bit like
+
+yanu o'reilly etc but they're just like
+
+totally messed up um
+
+and i mean the reason that this is so
+
+bad like we're generating h as a name
+
+but you have to think through
+
+it from the model's eyes it doesn't know
+
+that this h is the very first h all it
+
+knows is that h was previously and now
+
+how likely is h the last character well
+
+it's somewhat
+
+likely and so it just makes it last
+
+character it doesn't know that there
+
+were other things before it or there
+
+were not other things before it and so
+
+that's why it's generating all these
+
+like
+
+nonsense names
+
+another way to do this is
+
+to convince yourself that this is
+
+actually doing something reasonable even
+
+though it's so terrible is
+
+these little piece here are 27 right
+
+like 27.
+
+so how about if we did something like
+
+this
+
+instead of p having any structure
+
+whatsoever
+
+how about if p was just
+
+torch dot once
+
+of 27
+
+by default this is a float 32 so this is
+
+fine divide 27
+
+so what i'm doing here is this is the
+
+uniform distribution which will make
+
+everything equally likely
+
+and we can sample from that so let's see
+
+if that does any better
+
+okay so it's
+
+this is what you have from a model that
+
+is completely untrained where everything
+
+is equally likely so it's obviously
+
+garbage and then if we have a trained
+
+model which is trained on just bi-grams
+
+this is what we get so you can see that
+
+it is more name-like it is actually
+
+working it's just um
+
+my gram is so terrible and we have to do
+
+better now next i would like to fix an
+
+inefficiency that we have going on here
+
+because what we're doing here is we're
+
+always fetching a row of n from the
+
+counts matrix up ahead
+
+and then we're always doing the same
+
+things we're converting to float and
+
+we're dividing and we're doing this
+
+every single iteration of this loop and
+
+we just keep renormalizing these rows
+
+over and over again and it's extremely
+
+inefficient and wasteful so what i'd
+
+like to do is i'd like to actually
+
+prepare a matrix capital p that will
+
+just have the probabilities in it so in
+
+other words it's going to be the same as
+
+the capital n matrix here of counts but
+
+every single row will have the row of
+
+probabilities uh that is normalized to 1
+
+indicating the probability distribution
+
+for the next character given the
+
+character before it
+
+um as defined by which row we're in
+
+so basically what we'd like to do is
+
+we'd like to just do it up front here
+
+and then we would like to just use that
+
+row here so here we would like to just
+
+do p equals p of ix instead
+
+okay
+
+the other reason i want to do this is
+
+not just for efficiency but also i would
+
+like us to practice
+
+these n-dimensional tensors and i'd like
+
+us to practice their manipulation and
+
+especially something that's called
+
+broadcasting that we'll go into in a
+
+second
+
+we're actually going to have to become
+
+very good at these tensor manipulations
+
+because if we're going to build out all
+
+the way to transformers we're going to
+
+be doing some pretty complicated um
+
+array operations for efficiency and we
+
+need to really understand that and be
+
+very good at it
+
+so intuitively what we want to do is we
+
+first want to grab the floating point
+
+copy of n
+
+and i'm mimicking the line here
+
+basically
+
+and then we want to divide all the rows
+
+so that they sum to 1.
+
+so we'd like to do something like this p
+
+divide p dot sum
+
+but
+
+now we have to be careful
+
+because p dot sum actually
+
+produces a sum
+
+sorry equals and that float copy
+
+p dot sum produces a um
+
+sums up all of the counts of this entire
+
+matrix n and gives us a single number of
+
